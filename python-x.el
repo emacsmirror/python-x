@@ -580,7 +580,7 @@ sections after the ones already marked."
 (add-function :after (symbol-function
 		      (if (version< emacs-version "25.1")
 			  'python-shell-get-or-create-process
-			'run-python))
+			'python-shell-make-comint))
 	      #'python-shell--register-inferior)
 
 (defun python-shell--register-dedicated (dedicated)
