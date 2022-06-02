@@ -98,10 +98,6 @@
 (require 'folding)
 (require 'cl-lib)
 
-;; Optional
-(eval-when-compile
-  (require 'expand-region nil t))
-
 (defgroup python-x nil
     "Python eXtensions."
     :group 'python)
@@ -272,6 +268,8 @@ statement for display purposes."
 
 ;;;###autoload
 (defconst python--vhl-available (if (require 'volatile-highlights nil t) t))
+
+(declare-function vhl/add-range "volatile-highlights")
 
 ;;;###autoload
 (defcustom python-multiline-highlight python--vhl-available
@@ -849,6 +847,8 @@ the send the symbol at point. Print and display the result on the output buffer.
   "Add `python-x' specific expansions for `expand-region'"
   (set (make-local-variable 'er/try-expand-list)
     (append er/try-expand-list '(python-mark-fold-or-section))))
+
+(declare-function er/enable-mode-expansions "expand-region")
 
 ;;;###autoload
 (defun python-x-setup ()
