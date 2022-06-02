@@ -27,7 +27,7 @@
 ;;
 ;; Quick overview:
 ;;
-;; Use `python-x-setup' in your emacs startup:
+;; Use `python-x-setup' in your Emacs startup:
 ;;
 ;;   (python-x-setup)
 ;;
@@ -103,7 +103,7 @@
   (require 'expand-region nil t))
 
 (defgroup python-x nil
-    "Python eXtensions"
+    "Python eXtensions."
     :group 'python)
 
 
@@ -264,8 +264,9 @@ the python shell:
 ;; Verbose line evaluation/stepping
 
 (defun python-string-to-statement (string)
-  "Tweak the Python code string so that it can be evaluated as a single-line
-statement for display purposes"
+  "Convert a Python code block to a statement.
+Tweak STRING so that it can be evaluated as a single-line Python
+statement for display purposes."
   (replace-regexp-in-string "\\s *\\\\\n\\s *" " " string))
 
 ;;;###autoload
@@ -273,15 +274,17 @@ statement for display purposes"
 
 ;;;###autoload
 (defcustom python-multiline-highlight python--vhl-available
-  "When evaluating a statement which spans more than one line and less than a
+  "Display a temporary highlight on the evaluated region using `vhl/default-face'.
+When evaluating a statement which spans more than one line and less than a
 screenful, highlight temporarily the evaluated region using `vhl/default-face'.
 Requires `volatile-highlights' to be installed."
   :type 'boolean
   :group 'python-x)
 
 (defun python--vhl-full-lines (start end margin-top margin-bottom)
-  "Set a volatile highlight on the entire lines defined by start/end. The
-highlight is not set if spanning a single line or the entire visible region."
+  "Set a volatile highlight on the entire lines defined by START/END.
+The highlight is not set if spanning a single line or the entire visible
+region."
   (save-excursion
     (goto-char start)
     (unless (eq (point-min) start)
@@ -324,8 +327,9 @@ highlight is not set if spanning a single line or the entire visible region."
 
 ;;;###autoload
 (defun python-shell-send-line ()
-  "Send the current line (with any remaining continuations) to the inferior Python process,
-printing the result of the expression on the shell."
+  "Evaluate the current statement and show the result.
+Send the current statement the inferior Python process, printing the
+result of the expression on the shell."
   (interactive)
   (python-shell--send-block-with-motion 'python-nav-beginning-of-statement
 					'python-nav-end-of-statement
@@ -333,8 +337,9 @@ printing the result of the expression on the shell."
 
 ;;;###autoload
 (defun python-shell-send-line-and-step ()
-  "Send the current line (with any remaining continuations) to the inferior Python process,
-printing the result of the expression on the shell, then move on to the next
+  "Evaluate the current statement, show the result and move point.
+Send the current statement to the inferior Python process, printing the
+result of the expression on the shell, then move point on to the next
 statement."
   (interactive)
   (python-shell--send-block-with-motion 'python-nav-beginning-of-statement
@@ -346,22 +351,24 @@ statement."
 
 ;;;###autoload
 (defun python-shell-send-paragraph ()
-  "Send the current paragraph to the inferior Python process"
+  "Evaluate the current paragraph."
   (interactive)
   (python-shell--send-block-with-motion 'backward-paragraph 'forward-paragraph
 					nil t))
 
 ;;;###autoload
 (defun python-shell-send-paragraph-and-step ()
-  "Send the current paragraph to the inferior Python process, then move on to
-the next."
+  "Evaluate the current paragraph and move point.
+Send the current paragraph to the inferior Python process, then move on
+to the next."
   (interactive)
   (python-shell--send-block-with-motion 'backward-paragraph 'forward-paragraph
 					'forward-paragraph t))
 
 ;;;###autoload
 (defun python-shell-send-region-or-paragraph ()
-  "Send the current region to the inferior Python process, if active.
+  "Evaluate the current region or paragraph, then move point.
+Send the current region to the inferior Python process, if active.
 Otherwise, send the current paragraph."
   (interactive)
   (if (use-region-p)
@@ -739,7 +746,9 @@ exception. By default, simply call `display-buffer' according to
 ;; ElDoc/Help
 
 (defcustom python-shell-capture-help t
-  "When invoking help() from the prompt, capture the output into a regular *Help* buffer."
+  "Capture help output into a regular *Help* buffer.
+When invoking help() from the prompt, capture the output into a regular
+*Help* buffer."
   :type 'boolean
   :group 'python-x)
 
