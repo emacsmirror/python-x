@@ -738,12 +738,19 @@ When invoking help() from the prompt, capture the output into a regular
     (comint-simple-send proc (if inhibit-send "" string))))
 
 (defun python-x--comint-setup ()
+  ;; hook into the current comint inferior
   (add-hook 'comint-output-filter-functions #'python-comint--output-filter)
   (setq-local comint-input-sender #'python-comint--input-send)
   (add-function :after (process-sentinel (get-buffer-process (current-buffer)))
 		#'python-comint--process-sentinel)
+
   ;; python-shell--parent-buffer is (erroneusly) let-bound in python.el
   (setq-local python-shell--parent-buffer python-shell--parent-buffer)
+
+  ;; work-around (setq compilation-shell-minor-mode 'last-error) not behaving
+  ;; as expected -- scrolling is never resumed in an interactive session
+  (setq-local compilation-scroll-output t)
+
   (python-comint--update-process-state 'ready))
 
 (add-hook 'inferior-python-mode-hook #'python-x--comint-setup)
