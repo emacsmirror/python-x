@@ -698,19 +698,21 @@ exception. By default, simply call `display-buffer' according to
 (defun python-comint--output-filter (_output)
   (unless (eq python-comint--process-state 'error)
     (let ((case-fold-search nil))
-      (save-excursion
-	(goto-char (point-max))
-	(cond ((re-search-backward python-comint-exceptions-regex
-				   comint-last-output-start t)
-	       ;; exception in output
-	       (python-comint--update-process-state 'error)
-	       (funcall python-shell-show-exception-function (current-buffer)))
-	      ((and (equal (comint-check-proc (current-buffer)) '(run stop))
+      (cond ((save-excursion
+	       (goto-char (point-max))
+	       (re-search-backward python-comint-exceptions-regex
+				   comint-last-output-start t))
+	     ;; exception in output
+	     (python-comint--update-process-state 'error)
+	     (funcall python-shell-show-exception-function (current-buffer)))
+	    ((and (equal (comint-check-proc (current-buffer)) '(run stop))
+		  (save-excursion
 		    (save-restriction
+		      (goto-char (point-max))
 		      (narrow-to-region comint-last-output-start (point))
-		      (looking-back comint-prompt-regexp nil)))
-	       ;; ready
-	       (python-comint--update-process-state 'ready)))))))
+		      (looking-back comint-prompt-regexp nil))))
+	     ;; ready
+	     (python-comint--update-process-state 'ready))))))
 
 (defcustom python-shell-capture-help t
   "Capture help output into a regular *Help* buffer.
