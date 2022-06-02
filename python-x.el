@@ -111,14 +111,15 @@
 
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=22897
 (when (version< emacs-version "25.2")
-  (defun python-shell-completion-native-try ()
-    "Return non-nil if can trigger native completion."
-    (let ((python-shell-completion-native-enable t)
-	  (python-shell-completion-native-output-timeout
-	   python-shell-completion-native-try-output-timeout))
-      (python-shell-completion-native-get-completions
-       (get-buffer-process (current-buffer))
-       nil "_"))))
+  (with-suppressed-warnings
+    (defun python-shell-completion-native-try ()
+      "Return non-nil if can trigger native completion."
+      (let ((python-shell-completion-native-enable t)
+	    (python-shell-completion-native-output-timeout
+	     python-shell-completion-native-try-output-timeout))
+	(python-shell-completion-native-get-completions
+	 (get-buffer-process (current-buffer))
+	 nil "_")))))
 
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=21086
 (when (version< emacs-version "25.1")
