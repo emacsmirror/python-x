@@ -751,8 +751,10 @@ When invoking help() from the prompt, capture the output into a regular
   ;; python-shell--parent-buffer is (erroneusly) let-bound in python.el
   (setq-local python-shell--parent-buffer python-shell--parent-buffer)
 
-  ;; work-around (setq compilation-shell-minor-mode 'last-error) not behaving
-  ;; as expected -- scrolling is never resumed in an interactive session
+  ;; work-around compilation-shell-minor-mode (required for highlighting
+  ;; errors and turned on by python.el) not behaving as expected when
+  ;; compilation-scroll-output is set to 'first-error: scrolling is
+  ;; never resumed in an interactive session
   (setq-local compilation-scroll-output t)
 
   ;; setup the initial process state
