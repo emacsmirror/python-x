@@ -737,6 +737,10 @@ When invoking help() from the prompt, capture the output into a regular
     (python-comint--update-process-state 'running)
     (comint-simple-send proc (if inhibit-send "" string))))
 
+(defun python-comint--process-state-ready (&rest _r)
+  "Ran from the inferior when the process is first setup."
+  (python-comint--update-process-state 'ready))
+
 (defun python-x--comint-setup ()
   ;; hook into the current comint inferior
   (add-hook 'comint-output-filter-functions #'python-comint--output-filter)
@@ -751,7 +755,11 @@ When invoking help() from the prompt, capture the output into a regular
   ;; as expected -- scrolling is never resumed in an interactive session
   (setq-local compilation-scroll-output t)
 
-  (python-comint--update-process-state 'ready))
+  ;; setup the initial process state
+  (add-hook 'python-shell-first-prompt-hook
+	    'python-comint--process-state-ready
+	    100)
+  (python-comint--update-process-state 'running))
 
 (add-hook 'inferior-python-mode-hook #'python-x--comint-setup)
 
