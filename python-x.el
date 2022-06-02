@@ -647,7 +647,7 @@ to us (in descending order of recency)."
       (with-current-buffer (process-buffer process)
 	(python-comint--update-process-state 'running)))))
 
-(add-function :after (symbol-function 'python-shell-send-string)
+(add-function :before (symbol-function 'python-shell-send-string)
 	      #'python-comint--process-state-run)
 
 ;;;###autoload
