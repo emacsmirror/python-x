@@ -507,7 +507,7 @@ argument is provided, move COUNT times forward."
   (interactive "p")
   (unless count (setq count 1))
   (catch 'end
-    (dotimes (i (abs count))
+    (dotimes (_ (abs count))
       (forward-line (if (> count 0) 1 -1))
       (let ((pos (python-section-search (< count 0))))
 	(when (eq pos (point))
@@ -583,7 +583,7 @@ sections after the ones already marked."
 (defvar-local python-shell--dedicated-p nil)
 (defvar-local python-comint--current-cmd nil)
 
-(defun python-shell--register-inferior (&rest r)
+(defun python-shell--register-inferior (&rest _r)
   (setq python-shell--inferior-buffer (process-buffer (python-shell-get-process))))
 (add-function :after (symbol-function
 		      (if (version< emacs-version "25.1")
@@ -641,7 +641,7 @@ to us (in descending order of recency)."
      (python-comint--process-state-changed state))
     (setq python-comint--process-state state)))
 
-(defun python-comint--process-state-run (&rest r)
+(defun python-comint--process-state-run (&rest _r)
   ;; We might run from either the main or inferior process, so setup the
   ;; initial buffer to be always the inferior
   (let ((process (python-shell-get-process)))
@@ -690,14 +690,14 @@ exception. By default, simply call `display-buffer' according to
 		 "\\|") "\\)")
   "Regular expression used to search for exceptions in the output")
 
-(defun python-comint--process-sentinel (process event)
+(defun python-comint--process-sentinel (process _event)
   (let ((buffer (process-buffer process)))
     (unless (comint-check-proc buffer)
       (with-current-buffer buffer
 	(python-comint--update-process-state
 	 (if (zerop (process-exit-status process)) 'exited 'error))))))
 
-(defun python-comint--output-filter (output)
+(defun python-comint--output-filter (_output)
   (unless (eq python-comint--process-state 'error)
     (let ((case-fold-search nil))
       (save-excursion
