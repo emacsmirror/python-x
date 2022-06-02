@@ -714,6 +714,13 @@ exception. By default, simply call `display-buffer' according to
 	       ;; ready
 	       (python-comint--update-process-state 'ready)))))))
 
+(defcustom python-shell-capture-help t
+  "Capture help output into a regular *Help* buffer.
+When invoking help() from the prompt, capture the output into a regular
+*Help* buffer."
+  :type 'boolean
+  :group 'python-x)
+
 (defun python-comint--input-send (proc string)
   (let ((inhibit-send nil))
     (when (string-match (python-rx line-start (* whitespace)
@@ -746,13 +753,6 @@ exception. By default, simply call `display-buffer' according to
 
 ;; ElDoc/Help
 
-(defcustom python-shell-capture-help t
-  "Capture help output into a regular *Help* buffer.
-When invoking help() from the prompt, capture the output into a regular
-*Help* buffer."
-  :type 'boolean
-  :group 'python-x)
-
 ;;;###autoload
 (defun python-eldoc-for-region-or-symbol (string)
   "ElDoc for the current region or symbol at point. Similar to
@@ -766,6 +766,8 @@ When invoking help() from the prompt, capture the output into a regular
 	       (read-string "ElDoc for: " string t)
 	       string))))
     (python-eldoc-at-point string))
+
+(defvar python-help--parent-proc nil)
 
 (defun python-help--display-for-string (proc string)
   (let ((buffer (get-buffer-create "*help[Python]*"))
