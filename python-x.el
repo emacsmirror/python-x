@@ -710,7 +710,7 @@ exception. By default, simply call `display-buffer' according to
 	      ((and (equal (comint-check-proc (current-buffer)) '(run stop))
 		    (save-restriction
 		      (narrow-to-region comint-last-output-start (point))
-		      (looking-back comint-prompt-regexp)))
+		      (looking-back comint-prompt-regexp nil)))
 	       ;; ready
 	       (python-comint--update-process-state 'ready)))))))
 
