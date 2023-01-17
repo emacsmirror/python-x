@@ -316,7 +316,7 @@ region."
 	(python--vhl-full-lines start (if step (point) end)
 				margin-start margin-end)))
     (if as-region
-	(python-shell-send-region start end)
+	(python-x-shell-send-region start end)
 	(let* ((substring (buffer-substring-no-properties start end))
 	       (string (python-string-to-statement substring)))
 	  (python-shell-send-string string)))))
@@ -371,7 +371,7 @@ Send the current region to the inferior Python process, if active.
 Otherwise, send the current paragraph."
   (interactive)
   (if (use-region-p)
-      (python-shell-send-region (region-beginning) (region-end))
+      (python-x-shell-send-region (region-beginning) (region-end))
       (python-shell-send-paragraph)))
 
 
@@ -438,6 +438,13 @@ spanning more than one line, highlight temporarily the evaluated region using
 		pos))))))
 
 ;;;###autoload
+(defun python-x-shell-send-region (start end)
+  "Send region between START and END to the current inferior.
+Contrarily to `python-shell-send-region', does not move the current point."
+  (save-excursion
+    (python-shell-send-region start end)))
+
+;;;###autoload
 (defun python-shell-send-fold-or-section (&optional arg)
   "Send the section of code at point to the inferior Python process, up to the
 current fold or buffer boundaries. When a 0 argument is provided, evaluate from
@@ -467,7 +474,7 @@ screenful, the region is temporarily highlighted according to
 	(end (python-section-search nil)))
     (when python-section-highlight
       (python--vhl-full-lines start end 1 1))
-    (python-shell-send-region start end)))
+    (python-x-shell-send-region start end)))
 
 ;;;###autoload
 (defun python-x-shell-send-buffer (&optional arg)
@@ -495,7 +502,7 @@ current fold or buffer boundaries, then move on to the next."
 Otherwise, use `python-shell-send-current-fold-or-section'"
   (interactive)
   (if (use-region-p)
-      (python-shell-send-region (region-beginning) (region-end))
+      (python-x-shell-send-region (region-beginning) (region-end))
       (call-interactively #'python-shell-send-fold-or-section)))
 
 ;;;###autoload
