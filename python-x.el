@@ -1,6 +1,9 @@
 ;;; python-x.el --- python.el extras for interactive evaluation  -*- lexical-binding: t -*-
 
 ;; Author: Yuri D'Elia <wavexx@thregr.org>
+;; Keywords: python eval folding
+;; URL: https://gitlab.com/wavexx/python-x.el
+;; Package-Requires: ((python "0.24") (folding "0") (cl-lib "0.5"))
 
 ;; This file is NOT part of GNU Emacs.
 
