@@ -696,7 +696,15 @@ exception. By default, simply call `display-buffer' according to
 		 '("\\bTraceback (most recent call last):\n  File \""
 		   "  File \"[^\"]+\", line [0-9]+\n.*\n +\\^\n\\(Syntax\\|Indentation\\)Error: ")
 		 "\\|") "\\)")
-  "Regular expression used to search for exceptions in the output")
+  "Regular expression used to search for exceptions in the output.
+`python-comint-exceptions-max-lines' is used to restrict the search for
+exceptions in the output during lookback, and needs to be updated if
+this expression is changed.
+")
+
+(defvar python-comint-exceptions-max-lines 3
+  "Maximum line count required by `python-comint-exceptions-regex' to
+match all rules.")
 
 (defun python-comint--process-sentinel (process _event)
   (let ((buffer (process-buffer process)))
@@ -708,21 +716,26 @@ exception. By default, simply call `display-buffer' according to
 (defun python-comint--output-filter (_output)
   (unless (eq python-comint--process-state 'error)
     (let ((case-fold-search nil))
-      (cond ((save-excursion
-	       (goto-char (point-max))
-	       (re-search-backward python-comint-exceptions-regex
-				   comint-last-output-start t))
-	     ;; exception in output
-	     (python-comint--update-process-state 'error)
-	     (funcall python-shell-show-exception-function (current-buffer)))
-	    ((and (equal (comint-check-proc (current-buffer)) '(run stop))
-		  (save-excursion
-		    (save-restriction
-		      (goto-char (point-max))
-		      (narrow-to-region comint-last-output-start (point))
-		      (looking-back comint-prompt-regexp nil))))
-	     ;; ready
-	     (python-comint--update-process-state 'ready))))))
+      (save-excursion
+	(save-restriction
+	  ;; narrow the search for exceptions to just the number of
+	  ;; required full lines since the last callback (and never
+	  ;; before the last input) to ensure we can match partial
+	  ;; output with low overhead
+	  (narrow-to-region comint-last-input-end (point-max))
+	  (goto-char comint-last-output-start)
+	  (forward-line (- python-comint-exceptions-max-lines))
+	  (narrow-to-region (point) (point-max))
+	  (goto-char (point-max))
+
+	  (cond ((save-excursion (re-search-backward python-comint-exceptions-regex nil t))
+		 ;; exception in output
+		 (python-comint--update-process-state 'error)
+		 (funcall python-shell-show-exception-function (current-buffer)))
+		((and (equal (comint-check-proc (current-buffer)) '(run stop))
+		      (looking-back comint-prompt-regexp nil))
+		 ;; ready
+		 (python-comint--update-process-state 'ready))))))))
 
 (defcustom python-shell-capture-help t
   "Capture help output into a regular *Help* buffer.
