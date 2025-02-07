@@ -660,6 +660,19 @@ to us (in descending order of recency)."
 (add-function :before (symbol-function 'python-shell-send-string)
 	      #'python-comint--process-state-run)
 
+
+(defvar-local python-comint--run-after-filter-timer nil)
+
+(defun python-comint--run-after-filter (func)
+  (when python-comint--run-after-filter-timer
+    (cancel-timer python-comint--run-after-filter-timer))
+  (setq python-comint--run-after-filter-timer
+	(run-at-time 0 nil
+		     (lambda ()
+		       (setq python-comint--run-after-filter-timer nil)
+		       (funcall func)))))
+
+
 ;;;###autoload
 (defun python-shell-restart-process ()
   "Restart the current Python process"
@@ -682,12 +695,16 @@ to us (in descending order of recency)."
   :type 'boolean
   :group 'python-x)
 
+(defun python-shell-show-exception (buffer point)
+  (when-let ((window (display-buffer buffer)))
+    (set-window-point window point)))
+
 (defvar python-shell-show-exception-function
-  (lambda (buffer)
+  (lambda (buffer point)
     (when python-shell-show-exceptions
-      (display-buffer buffer)))
+      (python-shell-show-exception buffer point)))
   "Function invoked when the inferion Python process emits an uncaught
-exception. By default, simply call `display-buffer' according to
+exception. By default, call `python-shell-show-exception' according to
 `python-shell-show-exceptions'.")
 
 (defvar python-comint-exceptions-regex
@@ -715,7 +732,8 @@ match all rules.")
 
 (defun python-comint--output-filter (_output)
   (unless (eq python-comint--process-state 'error)
-    (let ((case-fold-search nil))
+    (let ((case-fold-search nil)
+	  (exception-found nil))
       (save-excursion
 	(save-restriction
 	  ;; narrow the search for exceptions to just the number of
@@ -725,17 +743,29 @@ match all rules.")
 	  (narrow-to-region comint-last-input-end (point-max))
 	  (goto-char comint-last-output-start)
 	  (forward-line (- python-comint-exceptions-max-lines))
-	  (narrow-to-region (point) (point-max))
-	  (goto-char (point-max))
 
-	  (cond ((save-excursion (re-search-backward python-comint-exceptions-regex nil t))
-		 ;; exception in output
-		 (python-comint--update-process-state 'error)
-		 (funcall python-shell-show-exception-function (current-buffer)))
-		((and (equal (comint-check-proc (current-buffer)) '(run stop))
-		      (looking-back comint-prompt-regexp nil))
-		 ;; ready
-		 (python-comint--update-process-state 'ready))))))))
+	  ;; search for exceptions first
+	  (save-excursion
+	    (when (re-search-forward python-comint-exceptions-regex nil t)
+	      (python-comint--update-process-state 'error)
+
+	      ;; trigger exception display outside of current comint
+	      ;; output filter hook in order to bypass restrictions
+	      (let ((buffer (current-buffer))
+		    (point (match-beginning 0)))
+		(python-comint--run-after-filter
+		 (lambda ()
+		   (funcall python-shell-show-exception-function buffer point))))
+
+	      (setq exception-found t)))
+
+	  ;; check if we have a prompt otherwise
+	  (when (and (not exception-found)
+		     (equal (comint-check-proc (current-buffer)) '(run stop)))
+	    (goto-char (point-max))
+	    (when (looking-back comint-prompt-regexp nil)
+	      (python-comint--update-process-state 'ready))))))))
+
 
 (defcustom python-shell-capture-help t
   "Capture help output into a regular *Help* buffer.
