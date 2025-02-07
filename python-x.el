@@ -910,7 +910,10 @@ the send the symbol at point. Print and display the result on the output buffer.
 			(python-info-current-symbol)))
 	 (string (python-string-to-statement substring)))
     (python-shell-send-string string)
-    (python-shell-display-shell)))
+    (when-let* ((buffer (process-buffer (python-shell-get-process)))
+		(window (display-buffer buffer t)))
+      (with-current-buffer buffer
+	(set-window-point window (point-max))))))
 
 
 ;; Configuration and setup
