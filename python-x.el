@@ -708,12 +708,11 @@ exception. By default, call `python-shell-show-exception' according to
 `python-shell-show-exceptions'.")
 
 (defvar python-comint-exceptions-regex
-  (concat "\\(" (mapconcat
+  (concat "\\(?:" (mapconcat
 		 'identity
-		 '("\\bTraceback (most recent call last):\n  File \""
-		   "  File \"[^\"]+\", line [0-9]+\n.*\n +\\^\n\\(Syntax\\|Indentation\\)Error: ")
+		 '("\\bTraceback (most recent call last):\\(?:\n  File \".*\\(?:\n    .*\\)*\\)*\n  File \"")
 		 "\\|") "\\)")
-  "Regular expression used to search for exceptions in the output.
+  "Regular expression/s used to search for exceptions in the output.
 `python-comint-exceptions-max-lines' is used to restrict the search for
 exceptions in the output during lookback, and needs to be updated if
 this expression is changed.
@@ -752,7 +751,7 @@ match all rules.")
 	      ;; trigger exception display outside of current comint
 	      ;; output filter hook in order to bypass restrictions
 	      (let ((buffer (current-buffer))
-		    (point (match-beginning 0)))
+		    (point (match-end 0)))
 		(python-comint--run-after-filter
 		 (lambda ()
 		   (funcall python-shell-show-exception-function buffer point))))
