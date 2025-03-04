@@ -619,7 +619,7 @@ to us (in descending order of recency)."
     (cl-remove-if-not
      (lambda (buffer)
        (with-current-buffer buffer
-	 (when (eq major-mode 'python-mode)
+	 (when (derived-mode-p 'python-mode)
 	   (when (bufferp python-shell--inferior-buffer)
 	     (eq inferior-buffer python-shell--inferior-buffer)))))
      (buffer-list))))
