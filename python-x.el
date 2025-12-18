@@ -83,12 +83,10 @@
 ;; All "python-shell-send-*" functions are also provided in a "*-and-step"
 ;; variant that moves the point after evaluation.
 ;;
-;; python-x uses `volatile-highlights', when available, for highlighting
-;; multi-line blocks. Installation through "melpa" is recommended (you don't
-;; actually need to enable `volatile-highlights-mode' itself). python-x also
-;; uses `folding' to interpret and define folding marks. Again, `folding-mode'
-;; needs to be enabled manually if code folding is also desired.
-;; `expand-region' is equally supported, when previously loaded.
+;; python-x uses `pulse', when available, for highlighting multi-line blocks.
+;; python-x also uses `folding' to interpret and define folding marks. Again,
+;; `folding-mode' needs to be enabled manually if code folding is also
+;; desired. `expand-region' is equally supported, when previously loaded.
 ;;
 ;; The default keyboard map definition set by (python-x-setup) is
 ;; currently tuned to the author's taste, and may change over time. You
@@ -270,21 +268,20 @@ statement for display purposes."
   (replace-regexp-in-string "\\s *\\\\\n\\s *" " " string))
 
 ;;;###autoload
-(defconst python--vhl-available (if (require 'volatile-highlights nil t) t))
-
-(declare-function vhl/add-range "volatile-highlights")
+(defface python-pulse-hl-face
+  '((t :inherit secondary-selection))
+  "Face used for python command highlights."
+  :group 'python-x)
 
 ;;;###autoload
-(defcustom python-multiline-highlight python--vhl-available
-  "Display a temporary highlight on the evaluated region using `vhl/default-face'.
-When evaluating a statement which spans more than one line and less than a
-screenful, highlight temporarily the evaluated region using `vhl/default-face'.
-Requires `volatile-highlights' to be installed."
+(defcustom python-multiline-highlight t
+  "Display a temporary highlight on the evaluated region using
+ `python-pulse-hl-face'."
   :type 'boolean
   :group 'python-x)
 
-(defun python--vhl-full-lines (start end margin-top margin-bottom)
-  "Set a volatile highlight on the entire lines defined by START/END.
+(defun python--hl-full-lines (start end margin-top margin-bottom)
+  "Set a pulse highlight on the entire lines defined by START/END.
 The highlight is not set if spanning a single line or the entire visible
 region."
   (save-excursion
@@ -300,7 +297,7 @@ region."
   (when (and (> (count-lines start end) 1)
 	     (or (> start (window-start))
 		 (< end (window-end))))
-    (vhl/add-range start end)))
+    (pulse-momentary-highlight-region start end 'python-pulse-hl-face)))
 
 (defun python-shell--send-block-with-motion (move-start move-end step as-region)
   (let (start end)
@@ -316,7 +313,7 @@ region."
     (when python-multiline-highlight
       (let ((margin-start (if as-region 1 0))
 	    (margin-end (if (or step as-region) 1 0)))
-	(python--vhl-full-lines start (if step (point) end)
+	(python--hl-full-lines start (if step (point) end)
 				margin-start margin-end)))
     (if as-region
 	(python-x-shell-send-region start end)
@@ -388,10 +385,10 @@ See `python-shell-send-fold-or-section'."
   :group 'python-x)
 
 ;;;###autoload
-(defcustom python-section-highlight python--vhl-available
+(defcustom python-section-highlight t
   "When evaluating a code fold/section with `python-shell-send-fold-or-section'
 spanning more than one line, highlight temporarily the evaluated region using
-`vhl/default-face'. Requires `volatile-highlights' to be installed."
+`python-pulse-hl-face'."
   :type 'boolean
   :group 'python-x)
 
@@ -476,7 +473,7 @@ screenful, the region is temporarily highlighted according to
   (let ((start (if (< arg 1) (point-min) (python-section-search t)))
 	(end (python-section-search nil)))
     (when python-section-highlight
-      (python--vhl-full-lines start end 1 1))
+      (python--hl-full-lines start end 1 1))
     (python-x-shell-send-region start end)))
 
 ;;;###autoload
