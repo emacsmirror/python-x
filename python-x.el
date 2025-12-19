@@ -4,7 +4,7 @@
 ;; Version: 0.1
 ;; Keywords: languages processes python eval folding
 ;; URL: https://gitlab.com/wavexx/python-x.el
-;; Package-Requires: ((python "0.24") (folding "0.0") (emacs "24.5") (compat "27.1"))
+;; Package-Requires: ((python "0.24") (folding "0.0") (emacs "24.5") (compat "26.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -109,85 +109,87 @@
 
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=22897
 (when (version< emacs-version "25.2")
-  (with-suppressed-warnings
-    (defun python-shell-completion-native-try ()
-      "Return non-nil if can trigger native completion."
-      (let ((python-shell-completion-native-enable t)
-	    (python-shell-completion-native-output-timeout
-	     python-shell-completion-native-try-output-timeout))
-	(python-shell-completion-native-get-completions
-	 (get-buffer-process (current-buffer))
-	 nil "_")))))
+  (eval-and-compile
+    (with-no-warnings
+      (defun python-shell-completion-native-try ()
+	"Return non-nil if can trigger native completion."
+	(let ((python-shell-completion-native-enable t)
+	      (python-shell-completion-native-output-timeout
+	       python-shell-completion-native-try-output-timeout))
+	  (python-shell-completion-native-get-completions
+	   (get-buffer-process (current-buffer))
+	   nil "_"))))))
 
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=21086
 (when (version< emacs-version "25.1")
   (eval-and-compile
-    (defconst python-rx-constituents
-      `((block-start          . ,(rx symbol-start
-				     (or "def" "class" "if" "elif" "else" "try"
-					 "except" "finally" "for" "while" "with")
-				     symbol-end))
-	(dedenter            . ,(rx symbol-start
-				    (or "elif" "else" "except" "finally")
-				    symbol-end))
-	(block-ender         . ,(rx symbol-start
-				    (or
-				     "break" "continue" "pass" "raise" "return")
-				    symbol-end))
-	(decorator            . ,(rx line-start (* space) ?@ (any letter ?_)
-				     (* (any word ?_))))
-	(defun                . ,(rx symbol-start (or "def" "class") symbol-end))
-	(if-name-main         . ,(rx line-start "if" (+ space) "__name__"
-				     (+ space) "==" (+ space)
-				     (any ?' ?\") "__main__" (any ?' ?\")
-				     (* space) ?:))
-	(symbol-name          . ,(rx (any letter ?_) (* (any word ?_))))
-	(open-paren           . ,(rx (or "{" "[" "(")))
-	(close-paren          . ,(rx (or "}" "]" ")")))
-	(simple-operator      . ,(rx (any ?+ ?- ?/ ?& ?^ ?~ ?| ?* ?< ?> ?= ?%)))
-	;; FIXME: rx should support (not simple-operator).
-	(not-simple-operator  . ,(rx
-				  (not
-				   (any ?+ ?- ?/ ?& ?^ ?~ ?| ?* ?< ?> ?= ?%))))
-	;; FIXME: Use regexp-opt.
-	(operator             . ,(rx (or "+" "-" "/" "&" "^" "~" "|" "*" "<" ">"
-					 "=" "%" "**" "//" "<<" ">>" "<=" "!="
-					 "==" ">=" "is" "not")))
-	;; FIXME: Use regexp-opt.
-	(assignment-operator  . ,(rx (or "=" "+=" "-=" "*=" "/=" "//=" "%=" "**="
-					 ">>=" "<<=" "&=" "^=" "|=")))
-	(string-delimiter . ,(rx (and
-				  ;; Match even number of backslashes.
-				  (or (not (any ?\\ ?\' ?\")) point
-				      ;; Quotes might be preceded by a escaped quote.
-				      (and (or (not (any ?\\)) point) ?\\
-					   (* ?\\ ?\\) (any ?\' ?\")))
-				  (* ?\\ ?\\)
-				  ;; Match single or triple quotes of any kind.
-				  (group (or  "\"" "\"\"\"" "'" "'''")))))
-	(coding-cookie . ,(rx line-start ?# (* space)
-			      (or
-			       ;; # coding=<encoding name>
-			       (: "coding" (or ?: ?=) (* space) (group-n 1 (+ (or word ?-))))
-			       ;; # -*- coding: <encoding name> -*-
-			       (: "-*-" (* space) "coding:" (* space)
-				  (group-n 1 (+ (or word ?-))) (* space) "-*-")
-			       ;; # vim: set fileencoding=<encoding name> :
-			       (: "vim:" (* space) "set" (+ space)
-				  "fileencoding" (* space) ?= (* space)
-				  (group-n 1 (+ (or word ?-))) (* space) ":")))))
-      "Additional Python specific sexps for `python-rx'")
+    (with-no-warnings
+      (defconst python-rx-constituents
+	`((block-start          . ,(rx symbol-start
+				       (or "def" "class" "if" "elif" "else" "try"
+					   "except" "finally" "for" "while" "with")
+				       symbol-end))
+	  (dedenter            . ,(rx symbol-start
+				      (or "elif" "else" "except" "finally")
+				      symbol-end))
+	  (block-ender         . ,(rx symbol-start
+				      (or
+				       "break" "continue" "pass" "raise" "return")
+				      symbol-end))
+	  (decorator            . ,(rx line-start (* space) ?@ (any letter ?_)
+				       (* (any word ?_))))
+	  (defun                . ,(rx symbol-start (or "def" "class") symbol-end))
+	  (if-name-main         . ,(rx line-start "if" (+ space) "__name__"
+				       (+ space) "==" (+ space)
+				       (any ?' ?\") "__main__" (any ?' ?\")
+				       (* space) ?:))
+	  (symbol-name          . ,(rx (any letter ?_) (* (any word ?_))))
+	  (open-paren           . ,(rx (or "{" "[" "(")))
+	  (close-paren          . ,(rx (or "}" "]" ")")))
+	  (simple-operator      . ,(rx (any ?+ ?- ?/ ?& ?^ ?~ ?| ?* ?< ?> ?= ?%)))
+	  ;; FIXME: rx should support (not simple-operator).
+	  (not-simple-operator  . ,(rx
+				    (not
+				     (any ?+ ?- ?/ ?& ?^ ?~ ?| ?* ?< ?> ?= ?%))))
+	  ;; FIXME: Use regexp-opt.
+	  (operator             . ,(rx (or "+" "-" "/" "&" "^" "~" "|" "*" "<" ">"
+					   "=" "%" "**" "//" "<<" ">>" "<=" "!="
+					   "==" ">=" "is" "not")))
+	  ;; FIXME: Use regexp-opt.
+	  (assignment-operator  . ,(rx (or "=" "+=" "-=" "*=" "/=" "//=" "%=" "**="
+					   ">>=" "<<=" "&=" "^=" "|=")))
+	  (string-delimiter . ,(rx (and
+				    ;; Match even number of backslashes.
+				    (or (not (any ?\\ ?\' ?\")) point
+					;; Quotes might be preceded by a escaped quote.
+					(and (or (not (any ?\\)) point) ?\\
+					     (* ?\\ ?\\) (any ?\' ?\")))
+				    (* ?\\ ?\\)
+				    ;; Match single or triple quotes of any kind.
+				    (group (or  "\"" "\"\"\"" "'" "'''")))))
+	  (coding-cookie . ,(rx line-start ?# (* space)
+				(or
+				 ;; # coding=<encoding name>
+				 (: "coding" (or ?: ?=) (* space) (group-n 1 (+ (or word ?-))))
+				 ;; # -*- coding: <encoding name> -*-
+				 (: "-*-" (* space) "coding:" (* space)
+				    (group-n 1 (+ (or word ?-))) (* space) "-*-")
+				 ;; # vim: set fileencoding=<encoding name> :
+				 (: "vim:" (* space) "set" (+ space)
+				    "fileencoding" (* space) ?= (* space)
+				    (group-n 1 (+ (or word ?-))) (* space) ":")))))
+	"Additional Python specific sexps for `python-rx'")
 
-    (defmacro python-rx (&rest regexps)
-      "Python mode specialized rx macro.
+      (defmacro python-rx (&rest regexps)
+	"Python mode specialized rx macro.
 This variant of `rx' supports common Python named REGEXPS."
-      (let ((rx-constituents (append python-rx-constituents rx-constituents)))
-	(cond ((null regexps)
-	       (error "No regexp"))
-	      ((cdr regexps)
-	       (rx-to-string `(and ,@regexps) t))
-	      (t
-	       (rx-to-string (car regexps) t))))))
+	(let ((rx-constituents (append python-rx-constituents rx-constituents)))
+	  (cond ((null regexps)
+		 (error "No regexp"))
+		((cdr regexps)
+		 (rx-to-string `(and ,@regexps) t))
+		(t
+		 (rx-to-string (car regexps) t)))))))
 
   (defun python-shell-buffer-substring (start end &optional nomain)
     "Send buffer substring from START to END formatted for shell.
@@ -694,7 +696,7 @@ to us (in descending order of recency)."
   :group 'python-x)
 
 (defun python-shell-show-exception (buffer point)
-  (when-let ((window (display-buffer buffer)))
+  (when-let* ((window (display-buffer buffer)))
     (set-window-point window point)))
 
 (defvar python-shell-show-exception-function
@@ -775,7 +777,7 @@ When invoking help() from the prompt, capture the output into a regular
   (let ((inhibit-send nil))
     (when (string-match (python-rx line-start (* whitespace)
 				   (group symbol-name) (* whitespace)
-				   (group "(" (* whitespace) (+ any) (* whitespace) ")")
+				   (group "(" (* whitespace) (+ not-newline) (* whitespace) ")")
 				   (* whitespace) line-end)
 			string)
       ;; function call
