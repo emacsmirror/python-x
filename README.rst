@@ -8,11 +8,11 @@ process.
 
 - Additional evaluation and stepping by lines, paragraphs, sections and
   folds.
-- Evaluation feedback using volatile-highlights_.
+- Evaluation highlights with ``pulse``, process running status within
+  the modeline and automatic exception visualization on errors.
 - Navigation by sections/folds_ (like notebook/MATLAB code "cells"),
   with native support for expand-region_.
-- Improved exception handling.
-- Improved ElDoc/Help behavior.
+- Integrated docstring visualization with highlighting.
 
 Use ``python-x-setup`` in your emacs startup:
 
