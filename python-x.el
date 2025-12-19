@@ -3,7 +3,8 @@
 ;; Author: Yuri D'Elia <wavexx@thregr.org>
 ;; Keywords: python eval folding
 ;; URL: https://gitlab.com/wavexx/python-x.el
-;; Package-Requires: ((python "0.24") (folding "0") (cl-lib "0.5"))
+;; Package-Requires: ((python "0.24") (folding "0") (cl-lib "0.5")
+;; (emacs "23.2"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -83,8 +84,8 @@
 ;; All "python-shell-send-*" functions are also provided in a "*-and-step"
 ;; variant that moves the point after evaluation.
 ;;
-;; python-x uses `pulse', when available, for highlighting multi-line blocks.
-;; python-x also uses `folding' to interpret and define folding marks. Again,
+;; python-x uses `pulse' for highlighting multi-line blocks. python-x also
+;; uses `folding' to interpret and define folding marks. Again,
 ;; `folding-mode' needs to be enabled manually if code folding is also
 ;; desired. `expand-region' is equally supported, when previously loaded.
 ;;
