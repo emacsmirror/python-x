@@ -121,8 +121,8 @@
 	   nil "_"))))))
 
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=21086
-(when (version< emacs-version "25.1")
-  (eval-and-compile
+(eval-and-compile
+  (when (version< emacs-version "25.1")
     (with-no-warnings
       (defconst python-rx-constituents
 	`((block-start          . ,(rx symbol-start
@@ -189,7 +189,7 @@ This variant of `rx' supports common Python named REGEXPS."
 		((cdr regexps)
 		 (rx-to-string `(and ,@regexps) t))
 		(t
-		 (rx-to-string (car regexps) t)))))))
+		 (rx-to-string (car regexps) t))))))
 
   (defun python-shell-buffer-substring (start end &optional nomain)
     "Send buffer substring from START to END formatted for shell.
@@ -259,7 +259,7 @@ the python shell:
 	  (when (looking-at-p (python-rx coding-cookie))
 	    (delete-region
 	     (line-beginning-position) (line-end-position))))
-	(buffer-substring-no-properties (point-min) (point-max))))))
+	(buffer-substring-no-properties (point-min) (point-max)))))))
 
 
 ;; Verbose line evaluation/stepping
