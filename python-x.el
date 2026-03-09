@@ -108,8 +108,8 @@
 ;; Patch some buggy definitions in python.el
 
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=22897
-(when (version< emacs-version "25.2")
-  (eval-and-compile
+(eval-and-compile
+  (when (version< emacs-version "25.2")
     (with-no-warnings
       (defun python-shell-completion-native-try ()
 	"Return non-nil if can trigger native completion."
