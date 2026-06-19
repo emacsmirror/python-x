@@ -894,7 +894,7 @@ navigate back and forth between the buffers with C-c C-z C-z C-z ..."
 	       (interactive)
 	       (if (eq major-mode 'inferior-python-mode)
 		   (python-shell-switch-to-buffer)
-		   (python-shell-switch-to-shell)))))
+		   (python-shell-switch-to-shell t)))))
     (define-key map ev fun)
     (set-transient-map map t)
     (funcall fun)))
